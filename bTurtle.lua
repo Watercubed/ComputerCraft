@@ -2,15 +2,16 @@
 -- by BananaFish
 -- Contains functions for doing various things.
 
+local help = ""
 -- Initalize Turtle Class
 Turtle = {}
 Turtle.__index = Turtle
 
 function Turtle:new()
+  print("Initalizing Turtle Object")
     local instance = setmetatable({}, Turtle)
-    local fuel_level = 0
+    instance.fuel_level = 0
 
-    print("Testy")
     return instance
 end
 
@@ -22,9 +23,18 @@ end
 -- Copy-cat IDE doesn't contain some functions like setCursorPosition.
 -- This causes errors.
 function Turtle:wipe()
+  local repeat_input = true
+
   print("Attempting wipe")
   term.clear()
   term.setCursorPosition(1,1)
+end
+
+-- Exit
+-- Break interface loop
+function Turtle:exit()
+  print("Exiting bTurtle")
+  return
 end
 
 -- QOL Methods --
@@ -47,21 +57,29 @@ function Turtle:refuel(amount)
 end
 
 -- Start --
+bTurtle = Turtle:new()
+local input = ""
+
 local status, result = pcall(function() bTurtle:wipe() end)
-if status == TRUE
+if status == true
 then
   print("Screen Wiped")
 
 else
-  print("Wipe error")
+  print("Wipe error, Probably can't set cursor to 1,1")
+  term.clear()
 end
 
 print "bTurtle 0.1.0"
 print("By BananaFish")
 
-bTurtle = Turtle:new()
+print("Please input the desired method")
+input = io.read()
 
-local input = io.read()
-print (input)
+if bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+then
+  bTurtle[input](bTurtle)
+end
+
 
 -- End --
