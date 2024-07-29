@@ -22,19 +22,21 @@ end
 -- Attempt to clear screen and reset cursor.
 -- Copy-cat IDE doesn't contain some functions like setCursorPosition.
 -- This causes errors.
-function Turtle:wipe()
-  local repeat_input = true
 
-  print("Attempting wipe")
-  term.clear()
-  term.setCursorPosition(1,1)
+function Turtle:trywipe()
+  local status, result = pcall(function() bTurtle:wipe() end) -- Error trap clear function
+
+  if status == false
+  then
+    print("Wipe error, Probably can't set cursor to 1,1")
+    term.clear()
+  end
 end
 
--- Exit
--- Break interface loop
-function Turtle:exit()
-  print("Exiting bTurtle")
-  return
+function Turtle:wipe()
+  print("Attempting wipe")
+  term.clear()
+  term.setCursorPos(1,1)
 end
 
 -- QOL Methods --
@@ -59,26 +61,69 @@ end
 -- Start --
 bTurtle = Turtle:new()
 local input = ""
+local input_lower = ""
+local rollover_note = ""
 
-local status, result = pcall(function() bTurtle:wipe() end)
-if status == true
-then
-  print("Screen Wiped")
 
-else
-  print("Wipe error, Probably can't set cursor to 1,1")
-  term.clear()
-end
+while true
+do
+  Turtle:trywipe()
 
-print "bTurtle 0.1.0"
-print("By BananaFish")
 
-print("Please input the desired method")
-input = io.read()
+  -- Info block --
+  term.setTextColor(16) -- Dec Yellow
+  print "bTurtle 0.1.0"
 
-if bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
-then
-  bTurtle[input](bTurtle)
+  term.setTextColor(1) -- Dec White
+  print("Current fuel Level:", turtle.getFuelLevel())
+  print("Use Help 'Method' for description\n")
+  print("Methods:")
+
+  -- Hardware functions
+  for key, value in pairs(getmetatable(bTurtle))
+  do
+    if key ~= "__index" and key ~= "new" and key ~= "trywipe" and key ~= "wipe"  -- Remove index and wipe from tutorial view
+    then
+      print(" ", key)
+    end
+  end
+
+  -- Manually added menu options
+  print("  exit")
+
+  -- If note from previous entry exists add note over entry line and reset
+  if rollover_note ~= ""
+  then
+    term.setCursorPos(1,12)
+    print(rollover_note)
+    term.setCursorPos(1,1)
+    rollover_note = ""
+  end
+
+  term.setCursorPos(1,13)
+
+  -- Gets user input
+  input = io.read()
+  input_lower = string.lower(input)
+
+    if input_lower == "exit"
+    then
+      Turtle:trywipe()
+      break
+
+    -- Method without params
+    elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+    then
+      bTurtle[input](bTurtle)
+
+    -- Method with params
+    elseif bTurtle[input] and type(bTurtle[input][1]) == "function" -- Request user input for selecting method
+    then
+      bTurtle[input](bTurtle)
+
+    else
+      rollover_note = "Invalid command:" .. input
+    end
 end
 
 
