@@ -79,7 +79,7 @@ do
 
   -- Info block --
   term.setTextColor(16) -- Dec Yellow
-  print "bTurtle 0.1.0"
+  print "bTurtle 0.2.0"
 
   term.setTextColor(1) -- Dec White
   print("Current fuel Level:", turtle.getFuelLevel())
