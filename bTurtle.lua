@@ -55,14 +55,20 @@ end
 -- Refuels slot one
 
 function Turtle:refuel(amount)
-  local amount = amount
+  -- Convert to int
+  print(amount)
+  local amount = tonumber(amount)
   turtle.refuel(amount)
+
 end
 
 -- Start --
 bTurtle = Turtle:new()
 local input = ""
 local input_formated = {}
+local input_index = 1
+local params = {}
+local param_index = 1
 local rollover_note = ""
 
 
@@ -101,37 +107,51 @@ do
     rollover_note = ""
   end
 
+  -- Set cursor one above lowest line on turtle
   term.setCursorPos(1,13)
 
   -- Take and format user input
   input = io.read()
   input_lower = string.lower(input)
 
-  -- Unpack string into array if necessary
-  for i in string.gmatch(input, "%S+")
+  -- Unpack input string into array
+  input_index = 1
+  param_index = 1
+  for element in string.gmatch(input, "%S+")
   do
-    input_formated[i] = i
-    print(i)
+    input_formated[input_index] = string.lower(element)
+
+    -- If not first element add to parameter list
+    if input_index >= 1
+    then
+      params[param_index] = element
+      param_index = param_index + 1
+    end
+
+    input_index = input_index + 1
   end
 
+
+  -- If user enters any form of input break immediatly
   if input_lower == "exit"
   then
     Turtle:trywipe()
     break
 
-  -- Method with params
-  elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+  -- User enters method with params
+  -- 2 because the index is declared at 1
+  elseif type(bTurtle[input_formated[1]]) == "function" and input_index ~= 2
   then
-    bTurtle[input](bTurtle)
-    rollover_note = "Method Selected"
+    rollover_note = "Method with params"
+    bTurtle[input_formated[1]](unpack(params))
 
-  -- Method without params
-  elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+  -- User enters method without params
+  elseif type(bTurtle[input_lower]) == "function" -- Request user input for selecting method
   then
-    bTurtle[input](bTurtle)
-    rollover_note = "Function Selected"
+    rollover_note = "Method without params"
+    bTurtle[input_lower](bTurtle)
 
-
+  -- Unknown input
   else
     rollover_note = "Invalid command:" .. input
   end
