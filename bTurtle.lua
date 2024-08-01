@@ -22,7 +22,6 @@ end
 -- Attempt to clear screen and reset cursor.
 -- Copy-cat IDE doesn't contain some functions like setCursorPosition.
 -- This causes errors.
-
 function Turtle:trywipe()
   local status, result = pcall(function() bTurtle:wipe() end) -- Error trap clear function
 
@@ -53,6 +52,8 @@ function Turtle:drill(distance,  come_home)
 
 end
 
+-- Refuels slot one
+
 function Turtle:refuel(amount)
   local amount = amount
   turtle.refuel(amount)
@@ -61,7 +62,7 @@ end
 -- Start --
 bTurtle = Turtle:new()
 local input = ""
-local input_lower = ""
+local input_formated = {}
 local rollover_note = ""
 
 
@@ -102,28 +103,38 @@ do
 
   term.setCursorPos(1,13)
 
-  -- Gets user input
+  -- Take and format user input
   input = io.read()
   input_lower = string.lower(input)
 
-    if input_lower == "exit"
-    then
-      Turtle:trywipe()
-      break
+  -- Unpack string into array if necessary
+  for i in string.gmatch(input, "%S+")
+  do
+    input_formated[i] = i
+    print(i)
+  end
 
-    -- Method without params
-    elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
-    then
-      bTurtle[input](bTurtle)
+  if input_lower == "exit"
+  then
+    Turtle:trywipe()
+    break
 
-    -- Method with params
-    elseif bTurtle[input] and type(bTurtle[input][1]) == "function" -- Request user input for selecting method
-    then
-      bTurtle[input](bTurtle)
+  -- Method with params
+  elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+  then
+    bTurtle[input](bTurtle)
+    rollover_note = "Method Selected"
 
-    else
-      rollover_note = "Invalid command:" .. input
-    end
+  -- Method without params
+  elseif bTurtle[input] and type(bTurtle[input]) == "function" -- Request user input for selecting method
+  then
+    bTurtle[input](bTurtle)
+    rollover_note = "Function Selected"
+
+
+  else
+    rollover_note = "Invalid command:" .. input
+  end
 end
 
 
