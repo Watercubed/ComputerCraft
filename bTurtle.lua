@@ -41,12 +41,49 @@ end
 -- QOL Methods --
 -- Things I wanted to add that were simple but supplimented the provided library
 
+-- w,a,s,d,Space,Shift,q,e
+-- @param count: repeat n times
+--function Turtle:w(count)
+  -- Default to once
+--  local count = count or 1
+
+  --for n = 1, count
+  --do
+   -- turtle.forward()
+  --end
+
+
+
+
+
+
 -- Drills a 1x1 tunnel of the specified distance
 -- @param Distance to drill: string
+-- @param come_home: Will the rutle return to the starting position?
 function Turtle:drill(distance,  come_home)
 
     -- Variables
     local distance = distance
+    -- Come home by default
+    local come_home = come_home or true
+
+    -- Dig, and move forward n times
+    for n = 1, distance
+    do
+      turtle.suck()
+      turtle.dig()
+      turtle.forward()
+    end
+
+    -- Return if come_home true
+    if come_home == true
+    then
+      for n = 1, distance
+      do
+        turtle.back()
+      end
+    end
+
 
     return nil
 
@@ -86,6 +123,7 @@ do
   print("Use Help 'Method' for description\n")
   print("Methods:")
 
+  print("W,A,S,D,Space,Shift,q,e")
   -- Hardware functions
   for key, value in pairs(getmetatable(bTurtle))
   do
