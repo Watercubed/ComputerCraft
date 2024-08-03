@@ -2,6 +2,8 @@
 -- by BananaFish
 -- Contains functions for doing various things.
 
+move_limit = 5
+
 local help = ""
 -- Initalize Turtle Class
 Turtle = {}
@@ -38,27 +40,136 @@ function Turtle:wipe()
   term.setCursorPos(1,1)
 end
 
+-- Set a limit for a passed number
+-- @param number: Input number
+-- @param limit: maximum allowed return
+function Turtle:clamp(number, limit)
+  local clamp = tonumber(number)
+  local limit = tonumber(limit)
+  local calculated = 0
+
+  if clamp < limit
+  then
+    return clamp
+
+  else
+    return limit
+  end
+end
+
+
+
+
 -- QOL Methods --
 -- Things I wanted to add that were simple but supplimented the provided library
 
--- w,a,s,d,Space,Shift,q,e
--- @param count: repeat n times
---function Turtle:w(count)
+-- w,a,s,d,q,e,r,f
+-- @param distance: repeat n times
+function Turtle:w(distance)
   -- Default to once
---  local count = count or 1
 
-  --for n = 1, count
-  --do
-   -- turtle.forward()
-  --end
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
 
+  for n = 1, distance
+  do
+    turtle.forward()
+  end
+  rollover_note = "Moved forward " .. tostring(distance)
+end
 
+function Turtle:a(distance)
+  -- Default to once
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
+  turtle.turnLeft()
+  for n = 1, distance
+  do
+    turtle.forward()
+  end
+  turtle.turnRight()
+  rollover_note = "Moved left " .. tostring(distance)
+end
 
+function Turtle:s(distance)
+  -- Default to once
 
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
+
+  for n = 1, distance
+  do
+    turtle.back()
+  end
+  rollover_note = "Moved backward " .. tostring(distance)
+end
+
+function Turtle:d(distance)
+  -- Default to once
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
+
+  turtle.turnRight()
+  for n = 1, distance
+  do
+    turtle.forward()
+  end
+  turtle.turnLeft()
+
+  rollover_note = "Moved right " .. tostring(distance)
+end
+
+function Turtle:q(count)
+  -- Default to once
+  local count = tonumber(count) or 1
+  local count = Turtle:clamp(count, move_limit)
+  for n = 1, count
+  do
+    turtle.turnLeft()
+  end
+  rollover_note = "Turned left " .. tostring(distance)  .. " times"
+end
+
+function Turtle:e(count)
+  -- Default to once
+  local count = tonumber(count) or 1
+  local count = Turtle:clamp(count, move_limit)
+  for n = 1, count
+  do
+    turtle.turnRight()
+  end
+  rollover_note = "Turned right " .. tostring(distance) .. " times"
+end
+
+function Turtle:r(distance)
+  -- Default to once
+
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
+
+  for n = 1, distance
+  do
+    turtle.up()
+  end
+  rollover_note = "Moved up " .. tostring(distance)
+end
+
+function Turtle:f(distance)
+  -- Default to once
+
+  local distance = tonumber(distance) or 1
+  local distance = Turtle:clamp(distance, move_limit)
+
+  for n = 1, distance
+  do
+    turtle.down()
+  end
+  rollover_note = "Moved down " .. tostring(distance)
+end
 
 
 -- Drills a 1x1 tunnel of the specified distance
--- @param Distance to drill: string
+-- @param distance: distance to drill
 -- @param come_home: Will the rutle return to the starting position?
 function Turtle:drill(distance,  come_home)
 
@@ -84,29 +195,25 @@ function Turtle:drill(distance,  come_home)
       end
     end
 
-
     return nil
-
 end
 
 -- Refuels slot one
 
 function Turtle:refuel(amount)
   -- Convert to int
-  print(amount)
   local amount = tonumber(amount)
   turtle.refuel(amount)
-
 end
 
 -- Start --
 bTurtle = Turtle:new()
+rollover_note = "" -- Global
 local input = ""
 local input_formated = {}
 local input_index = 1
 local params = {}
 local param_index = 1
-local rollover_note = ""
 
 
 while true
@@ -116,25 +223,41 @@ do
 
   -- Info block --
   term.setTextColor(16) -- Dec Yellow
-  print "bTurtle 0.2.0"
+  print "bTurtle 0.1.0"
 
   term.setTextColor(1) -- Dec White
   print("Current fuel Level:", turtle.getFuelLevel())
   print("Use Help 'Method' for description\n")
   print("Methods:")
 
-  print("W,A,S,D,Space,Shift,q,e")
+  print("  w,a,s,d,q,e,r,f")
   -- Hardware functions
   for key, value in pairs(getmetatable(bTurtle))
   do
-    if key ~= "__index" and key ~= "new" and key ~= "trywipe" and key ~= "wipe"  -- Remove index and wipe from tutorial view
+    if key ~= "__index"
+      and key ~= "new"
+      and key ~= "trywipe"
+      and key ~= "wipe"
+      and key ~= "w"
+      and key ~= "a"
+      and key ~= "s"
+      and key ~= "d"
+      and key ~= "q"
+      and key ~= "e"
+      and key ~= "r" -- Rise
+      and key ~= "f" -- Fall
+      and key ~= "clamp"
+
+      -- Remove index and wipe from tutorial view
+
+
     then
       print(" ", key)
     end
   end
 
   -- Manually added menu options
-  print("  exit")
+  print("  exit or ex")
 
   -- If note from previous entry exists add note over entry line and reset
   if rollover_note ~= ""
@@ -171,7 +294,7 @@ do
 
 
   -- If user enters any form of input break immediatly
-  if input_lower == "exit"
+  if input_lower == "exit" or input_lower == "ex"
   then
     Turtle:trywipe()
     break
