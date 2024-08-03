@@ -2,7 +2,7 @@
 -- by BananaFish
 -- Contains functions for doing various things.
 
-move_limit = 5
+move_limit = 25
 
 local help = ""
 -- Initalize Turtle Class
@@ -127,7 +127,7 @@ function Turtle:q(count)
   do
     turtle.turnLeft()
   end
-  rollover_note = "Turned left " .. tostring(distance)  .. " times"
+  rollover_note = "Turned left " .. tostring(count)  .. " times"
 end
 
 function Turtle:e(count)
@@ -138,7 +138,7 @@ function Turtle:e(count)
   do
     turtle.turnRight()
   end
-  rollover_note = "Turned right " .. tostring(distance) .. " times"
+  rollover_note = "Turned right " .. tostring(count) .. " times"
 end
 
 function Turtle:r(distance)
@@ -199,12 +199,41 @@ function Turtle:drill(distance,  come_home)
 end
 
 -- Refuels slot one
-
 function Turtle:refuel(amount)
   -- Convert to int
   local amount = tonumber(amount)
   turtle.refuel(amount)
 end
+
+-- Place in front of tree chunk to chop down
+function Turtle:trunk()
+  local height = 0
+
+  -- Move under tree
+  turtle.dig()
+  turtle.forward()
+
+  -- Dig upward until no detection or limit
+  for n = 1, move_limit
+  do
+    if turtle.detectUp()
+    then
+      turtle.digUp()
+      turtle.up()
+      height = height + 1
+    end
+  end
+  -- Decend amount ascended
+  for n = 0, height
+  do
+    turtle.down()
+  end
+
+  -- Return to starting position
+  turtle.back()
+end
+
+
 
 -- Start --
 bTurtle = Turtle:new()
@@ -223,7 +252,7 @@ do
 
   -- Info block --
   term.setTextColor(16) -- Dec Yellow
-  print "bTurtle 0.1.0"
+  print "bTurtle 0.2.0"
 
   term.setTextColor(1) -- Dec White
   print("Current fuel Level:", turtle.getFuelLevel())
