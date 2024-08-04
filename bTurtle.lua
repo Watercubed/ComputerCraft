@@ -69,13 +69,14 @@ end
 -- defaults to 16 if not given (inventory is 16)
 -- resets slot to 1 at timeout
 function Turtle:seek(description)
-  local description = tostring(description)
-  local current = ""
+  local description = description
+  local current = {}
+
   for i = 1, 16
   do
-    current = turtle.getItemDetail()
+    current = turtle.getItemDetail() or {"empty"}
     -- If current slot not identical to description increment slot
-    if current ~= description
+    if current.name ~= description
     then
 
       -- If at slot 16 reset to one instead of advancing
@@ -87,7 +88,7 @@ function Turtle:seek(description)
       end
 
     -- If match found return true
-    elseif current == i
+    elseif current.name == description
     then
       return true
     end
@@ -101,7 +102,7 @@ function Turtle:seek(description)
   if string.lower(io.read()) == "y"
   then
     -- Call self and repeat
-    Turtle.seek(description)
+    Turtle:seek(description)
 
   else
     -- Update note and exit
@@ -291,7 +292,9 @@ function Turtle:floor(length, width, replace)
   local replace = replace or false
   local length_moved = 0
   local width_moved = 0
-  local source = ""
+  local source_present = false
+  local source_info = {} -- type unknown at declaration
+  local source_name = ""
 
   -- Limit maximum size
   length = Turtle:clamp(length, move_limit)
@@ -302,10 +305,23 @@ function Turtle:floor(length, width, replace)
     and width ~= 0
     then
       -- Detect and store source block
-      source = turtle.inspectDown
+      source_present, source_info = turtle.inspectDown()
+
+      --for key, value in pairs(source_info)
+      --do
+        --print(tostring(key))
+        --print(tostring(value))
+      --end
+  --print(type(source_info.name))
+  --print(source_info.name)
+  --error()
+
       -- Verify source detected
-      if source ~= nil
+      if source_present == true
       then
+        -- Pull name string from returned array
+        source_name = source_info.name
+
         -- Start row
         for w = 1, width
         do
@@ -313,7 +329,7 @@ function Turtle:floor(length, width, replace)
           for l = 1, length
           do
             -- Seek to ensure block availability
-            if Turtle.seek(source) == true
+            if Turtle:seek(source_name) == true
             then
               -- General Loop --
               -- Dig if not on first block
