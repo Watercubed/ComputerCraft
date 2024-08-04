@@ -63,6 +63,44 @@ end
 -- QOL Methods --
 -- Things I wanted to add that were simple but supplimented the provided library
 
+-- seek
+-- increments selected slot until hitting given description
+-- @param timout: number of slots to advance before requesting user input
+-- defaults to 16 if not given (inventory is 16)
+-- resets slot to 1 at timeout
+function Turtle:seek(description)
+  local description = description or 16
+  local current = ""
+  for i = 1, 16
+    current = turtle.getItemDetail()
+    -- if current slot not identical to description increment slot
+    if current ~= description
+    then
+      turtle.select(turtle.getSelectedSlot() + 1)
+    end
+
+    -- If match found return true
+    elseif current == i
+    then
+      return true
+    end
+
+  -- No match found
+  -- Request user input
+  Turtle.trywipe()
+  print("No slots found matching description passed (" .. description .. ") Continue? y/n")
+  if string.lower(io.read()) = "y"
+  then
+    -- Call self and repeat
+    Turtle.seek(description)
+
+  else
+    -- Update note and exit
+    rollover_note = "Seek abandoned"
+  end
+end
+
+
 -- w,a,s,d,q,e,r,f
 -- @param distance: repeat n times
 function Turtle:w(distance)
@@ -233,7 +271,56 @@ function Turtle:trunk()
   turtle.back()
 end
 
+-- Advanced Methods --
 
+-- floor
+-- Replicates the block under the turtle on a flat plane
+function Turtle:floor(length, width, replace)
+  -- If params not passed, set to 0
+  local length = length or 0
+  local width = width or 0
+  local replace = replace or false
+  local length_moved = 0
+  local width_moved = 0
+  local source = ""
+
+  -- Limit maximum size
+  length = Turtle:clamp(length, move_limit)
+  width = Turtle:clamp(width, move_limit)
+
+  -- Ensure params passed
+  if length ~= 0
+    and width ~= 0
+    then
+      -- Detect and store source block
+      source = turtle.inspectDown
+      -- Verify source detected
+      if source ~= nil
+        then
+        -- Start row
+        for w = 1, width
+        do
+          -- Start Column
+          for l = 1, length
+            -- Seek to ensure block availability
+            if Turtle.seek(source) == true
+            then
+              -- General Loop --
+              -- Dig if not on first block
+              if replace == true and l ~= 1
+              then
+                turtle.digDown()
+              end
+            else
+              -- Something went wrong, return false again
+              return false
+            end
+        end
+      else
+        rollover_note = "Source block not detected below"
+      end
+  end
+end
 
 -- Start --
 bTurtle = Turtle:new()
@@ -260,7 +347,8 @@ do
   print("Methods:")
 
   print("  w,a,s,d,q,e,r,f")
-  -- Hardware functions
+
+  -- Remove index and wipe from tutorial view
   for key, value in pairs(getmetatable(bTurtle))
   do
     if key ~= "__index"
@@ -276,9 +364,6 @@ do
       and key ~= "r" -- Rise
       and key ~= "f" -- Fall
       and key ~= "clamp"
-
-      -- Remove index and wipe from tutorial view
-
 
     then
       print(" ", key)
