@@ -69,27 +69,36 @@ end
 -- defaults to 16 if not given (inventory is 16)
 -- resets slot to 1 at timeout
 function Turtle:seek(description)
-  local description = description or 16
+  local description = tostring(description)
   local current = ""
   for i = 1, 16
+  do
     current = turtle.getItemDetail()
-    -- if current slot not identical to description increment slot
+    -- If current slot not identical to description increment slot
     if current ~= description
     then
-      turtle.select(turtle.getSelectedSlot() + 1)
-    end
+
+      -- If at slot 16 reset to one instead of advancing
+      if turtle.getSelectedSlot() ~= 16
+      then
+        turtle.select(turtle.getSelectedSlot() + 1)
+      else
+        turtle.select(1)
+      end
 
     -- If match found return true
     elseif current == i
     then
       return true
     end
+  end
 
   -- No match found
   -- Request user input
   Turtle.trywipe()
+  turtle.select(1)
   print("No slots found matching description passed (" .. description .. ") Continue? y/n")
-  if string.lower(io.read()) = "y"
+  if string.lower(io.read()) == "y"
   then
     -- Call self and repeat
     Turtle.seek(description)
@@ -296,12 +305,13 @@ function Turtle:floor(length, width, replace)
       source = turtle.inspectDown
       -- Verify source detected
       if source ~= nil
-        then
+      then
         -- Start row
         for w = 1, width
         do
           -- Start Column
           for l = 1, length
+          do
             -- Seek to ensure block availability
             if Turtle.seek(source) == true
             then
@@ -311,10 +321,14 @@ function Turtle:floor(length, width, replace)
               then
                 turtle.digDown()
               end
+              turtle.up()
+              turtle.down()
+
             else
               -- Something went wrong, return false again
               return false
             end
+          end
         end
       else
         rollover_note = "Source block not detected below"
