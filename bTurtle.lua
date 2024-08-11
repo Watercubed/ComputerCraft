@@ -84,6 +84,12 @@ function Turtle:seek(description)
       then
         turtle.select(turtle.getSelectedSlot() + 1)
       else
+        -- Simple return
+        --turtle.select(1)
+
+        -- Fancy return
+        turtle.select(11)
+        turtle.select(6)
         turtle.select(1)
       end
 
@@ -98,7 +104,7 @@ function Turtle:seek(description)
   -- Request user input
   Turtle.trywipe()
   turtle.select(1)
-  print("No slots found matching description passed (" .. description .. ") Continue? y/n")
+  print("No slots found matching description passed (" .. description .. ") Refresh? y/n")
   if string.lower(io.read()) == "y"
   then
     -- Call self and repeat
@@ -285,26 +291,32 @@ end
 
 -- floor
 -- Replicates the block under the turtle on a flat plane
+-- L x W with turtle at 1,1
+-- Takes source from origin
 function Turtle:floor(length, width, replace)
   -- If params not passed, set to 0
   local length = length or 0
   local width = width or 0
-  local replace = replace or false
+  local replace = replace or "f"
   local length_moved = 0
   local width_moved = 0
   local source_present = false
-  local source_info = {} -- type unknown at declaration
-  local source_name = ""
+  local source_info = {} -- Type unknown at declaration
+  local source_name = "" -- Name of block below turtle at origin
+  local target_info = {}
+  local target_name = "" -- Name of block below turtle
 
   -- Limit maximum size
   length = Turtle:clamp(length, move_limit)
   width = Turtle:clamp(width, move_limit)
 
-  -- Ensure params passed
-  if length ~= 0
-    and width ~= 0
+  replace = string.lower(replace)
+
+  -- Ensure valid params
+  if length > 1
+    and width > 1
     then
-      -- Detect and store source block
+      -- Detect and store source block info
       source_present, source_info = turtle.inspectDown()
 
       --for key, value in pairs(source_info)
@@ -328,24 +340,90 @@ function Turtle:floor(length, width, replace)
           -- Start Column
           for l = 1, length
           do
+            -- Detect and store target block info
+            target_present, target_info = turtle.inspectDown()
+            target_name = target_info.name
+
             -- Seek to ensure block availability
             if Turtle:seek(source_name) == true
             then
               -- General Loop --
               -- Dig if not on first block
-              if replace == true and l ~= 1
+              -- Also, not same type
+              if not (l == 1 and w == 1) and replace == "t" and target_name ~= source_name
               then
                 turtle.digDown()
+              else
+                -- pass
               end
-              turtle.up()
-              turtle.down()
+
+              turtle.placeDown()
+
+              -- Dont advance at end of column
+              if l ~= length
+              then
+                turtle.forward()
+              else
+                -- pass
+              end
 
             else
               -- Something went wrong, return false again
               return false
             end
           end
+
+          -- Advance row
+          -- Odd row (Happens first)
+          if  w % 2 ~= 0
+          then
+            turtle.turnRight()
+            -- Don't advance past the given size
+            if w ~= width
+            then
+              -- Dont advance at end of row
+              if l ~= length
+              then
+                turtle.forward()
+              end
+            else
+              --Pass
+            end
+            turtle.turnRight()
+
+          -- Even Row
+          else
+            -- Don't advance past the given size
+            if w ~= width
+            then
+              turtle.turnLeft()
+              -- Dont advance at end of row
+              if l ~= length
+              then
+                turtle.forward()
+              end
+              turtle.turnLeft()
+            end
+          end
+          -- Loop end
         end
+        -- Return to starting position
+        -- Probably will need work
+        -- Finished on odd width
+        if width % 2 ~= 0
+        then
+          Turtle:w(length)
+          turtle.turnRight() -- This is from cc turtle api
+          Turtle:w(width - 1) -- Negative offset from not advancing at end
+          turtle.turnRight()
+
+        -- Finsihed on even width
+        else
+          turtle.turnRight()
+          Turtle:w(width - 1) -- Negative offset from not advancing at end
+          turtle.turnRight()
+        end
+
       else
         rollover_note = "Source block not detected below"
       end
@@ -378,6 +456,7 @@ do
 
   print("  w,a,s,d,q,e,r,f")
 
+  -- TODO: Refactor, too bloated
   -- Remove index and wipe from tutorial view
   for key, value in pairs(getmetatable(bTurtle))
   do
