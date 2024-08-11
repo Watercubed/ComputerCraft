@@ -417,7 +417,7 @@ function Turtle:floor(length, width, replace)
         -- Finished on odd width
         if width % 2 ~= 0
         then
-          Turtle:w(length)
+          Turtle:w(length - 1) -- Negative offset from not advancing at end
           turtle.turnRight() -- This is from cc turtle api
           Turtle:w(width - 1) -- Negative offset from not advancing at end
           turtle.turnRight()
