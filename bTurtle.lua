@@ -65,54 +65,59 @@ end
 
 -- seek
 -- increments selected slot until hitting given description
--- @param timout: number of slots to advance before requesting user input
+-- @param timout: Number of slots to advance before requesting user input | Int
+-- @return: If match was able to be found | Boolean
 -- defaults to 16 if not given (inventory is 16)
 -- resets slot to 1 at timeout
 function Turtle:seek(description)
   local description = description
   local current = {}
 
-  for i = 1, 16
+  -- Will break after target found to not interfere with external
+  -- calls expecting a return
+  while 1 == 1
   do
-    current = turtle.getItemDetail() or {"empty"}
-    -- If current slot not identical to description increment slot
-    if current.name ~= description
-    then
-
-      -- If at slot 16 reset to one instead of advancing
-      if turtle.getSelectedSlot() ~= 16
+    for i = 1, 16
+    do
+      current = turtle.getItemDetail() or {"empty"}
+      -- If current slot not identical to description increment slot
+      if current.name ~= description
       then
-        turtle.select(turtle.getSelectedSlot() + 1)
-      else
-        -- Simple return
-        --turtle.select(1)
 
-        -- Fancy return
-        turtle.select(11)
-        turtle.select(6)
-        turtle.select(1)
+        -- If at slot 16 reset to one instead of advancing
+        if turtle.getSelectedSlot() ~= 16
+        then
+          turtle.select(turtle.getSelectedSlot() + 1)
+        else
+          -- Simple return
+          --turtle.select(1)
+
+          -- Fancy return
+          turtle.select(11)
+          turtle.select(6)
+          turtle.select(1)
+        end
+
+      -- If match found return true
+      elseif current.name == description
+      then
+        return true
       end
-
-    -- If match found return true
-    elseif current.name == description
-    then
-      return true
     end
-  end
 
-  -- No match found
-  -- Request user input
-  Turtle.trywipe()
-  turtle.select(1)
-  print("No slots found matching description passed (" .. description .. ") Refresh? y/n")
-  if string.lower(io.read()) == "y"
-  then
-    -- Call self and repeat
-    Turtle:seek(description)
-
-  else
-    -- Update note and exit
-    rollover_note = "Seek abandoned"
+    -- No match found
+    -- Request user input
+    Turtle.trywipe()
+    turtle.select(1)
+    print("No slots found matching description passed (" .. description .. ") Refresh? y/n")
+    if string.lower(io.read()) ~= "y"
+    then
+      -- Update note and exit
+      rollover_note = "Seek abandoned"
+      return false
+    else
+      -- pass
+    end
   end
 end
 
