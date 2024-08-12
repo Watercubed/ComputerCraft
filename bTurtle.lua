@@ -295,14 +295,18 @@ end
 -- Advanced Methods --
 
 -- floor
--- Replicates the block under the turtle on a flat plane
+-- Replaces blocks in a flat plane
 -- L x W with turtle at 1,1
 -- Takes source from origin
-function Turtle:floor(length, width, replace)
+-- @param replace: Replace existing blocks? | str
+-- @param roof: work with blocks above turtle instead of below? | str
+function Turtle:floor(length, width, replace, roof)
   -- If params not passed, set to 0
   local length = length or 0
   local width = width or 0
-  local replace = replace or "f"
+  local replace = replace or "y"
+  local roof = roof or "y"
+
   local length_moved = 0
   local width_moved = 0
   local source_present = false
@@ -310,28 +314,28 @@ function Turtle:floor(length, width, replace)
   local source_name = "" -- Name of block below turtle at origin
   local target_info = {}
   local target_name = "" -- Name of block below turtle
-
   -- Limit maximum size
   length = Turtle:clamp(length, move_limit)
   width = Turtle:clamp(width, move_limit)
 
+  -- Make lowercase to ensure y/n string variables are consistent
   replace = string.lower(replace)
+  roof = string.lower(roof)
 
   -- Ensure valid params
   if length > 1
     and width > 1
     then
-      -- Detect and store source block info
-      source_present, source_info = turtle.inspectDown()
 
-      --for key, value in pairs(source_info)
-      --do
-        --print(tostring(key))
-        --print(tostring(value))
-      --end
-  --print(type(source_info.name))
-  --print(source_info.name)
-  --error()
+      -- Detect and store source block info
+      -- Look up if roof is specifically specified,
+      -- Otherweise default to down
+      if roof ~= "y"
+      then
+        source_present, source_info = turtle.inspectDown()
+      else
+        source_present, source_info = turtle.inspectUp()
+      end
 
       -- Verify source detected
       if source_present == true
@@ -346,7 +350,15 @@ function Turtle:floor(length, width, replace)
           for l = 1, length
           do
             -- Detect and store target block info
-            target_present, target_info = turtle.inspectDown()
+            -- Look up if roof is specifically specified,
+            -- Otherweise default to down
+            if roof ~= "y"
+            then
+              target_present, target_info = turtle.inspectDown()
+            else
+              target_present, target_info = turtle.inspectUp()
+            end
+            -- Store name as separate variable because target info returns as obj
             target_name = target_info.name
 
             -- Seek to ensure block availability
@@ -355,14 +367,26 @@ function Turtle:floor(length, width, replace)
               -- General Loop --
               -- Dig if not on first block
               -- Also, not same type
-              if not (l == 1 and w == 1) and replace == "t" and target_name ~= source_name
+              if not (l == 1 and w == 1) and replace == "y" and target_name ~= source_name
               then
-                turtle.digDown()
+                -- Again we have to check roof to decide where to dig
+                if roof ~= "y"
+                then
+                  turtle.digDown()
+                else
+                  turtle.digUp()
+                end
               else
                 -- pass
               end
 
-              turtle.placeDown()
+              -- Again need to check roof var
+              if roof ~= "y"
+              then
+                turtle.placeDown()
+              else
+                turtle.placeUp()
+              end
 
               -- Dont advance at end of column
               if l ~= length
