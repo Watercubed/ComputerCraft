@@ -1,10 +1,25 @@
--- bTurtle--
+-- pastebin get Q6tuzxrU bTurtle
+-- ^^^ RUN ON A CC: TWEAKED COMPUTER TO INSTALL
+
+-- Banana Turtle --
 -- by BananaFish
--- Contains functions for doing various things.
+-- A user friendly CC: Tweaked Command Line Interface with
+-- lots of features.
 
-move_limit = 25
+-- SETTINGS --
+-- These values can be modified to suit your needs.
+-- I would not recommend changing these unless you know what you are doing.
 
-local help = ""
+-- move_limit
+-- The maximum amount of times the turtle can perform a movement action in one function
+  -- Basically so if you accidentally tell the turtle to go too far, it won't.
+-- There are times where a function may use this number unexpectedly.
+-- For example, the floor program will use it as a limit for each axis, so the total is squared.
+move_limit = 25 
+
+-- !! DO NOT EDIT ANYTHING BELOW THIS POINT !! -- 
+
+-- TURTLE CLASS --
 -- Initalize Turtle Class
 Turtle = {}
 Turtle.__index = Turtle
@@ -20,7 +35,7 @@ end
 -- Interface Methods --
 -- Helping for online development
 
--- Wipe --
+-- trywipe, wipe
 -- Attempt to clear screen and reset cursor.
 -- Copy-cat IDE doesn't contain some functions like setCursorPosition.
 -- This causes errors.
@@ -40,9 +55,11 @@ function Turtle:wipe()
   term.setCursorPos(1,1)
 end
 
+-- clamp
 -- Set a limit for a passed number
--- @param number: Input number
--- @param limit: maximum allowed return
+-- Parameters must be able to be convered to numbers
+-- @param number: Input number | Any Type
+-- @param limit: maximum allowed return | Any Type
 function Turtle:clamp(number, limit)
   local clamp = tonumber(number)
   local limit = tonumber(limit)
@@ -57,31 +74,36 @@ function Turtle:clamp(number, limit)
   end
 end
 
+-- Pages --
+-- Displays that can be called to change the screen on the turtle
 
+-- help
+-- Displays a basic help page.
 
 
 -- QOL Methods --
--- Things I wanted to add that were simple but supplimented the provided library
+-- Things I wanted to add that were simple but supplimented the provided library.
 
 -- seek
--- increments selected slot until hitting given description
--- @param timout: Number of slots to advance before requesting user input | Int
+-- increments selected slot until hitting given description.
+-- Will loop once or 16 times if not given (inventory is 16)
+-- resets slot to 1 on timeout
+-- @param item_name: Name of item, Ex: minecraft:dirt
+  -- item_name should equal the return of getItemDetail()'s name attribute.
 -- @return: If match was able to be found | Boolean
--- defaults to 16 if not given (inventory is 16)
--- resets slot to 1 at timeout
-function Turtle:seek(description)
-  local description = description
-  local current = {}
+function Turtle:seek(item_name)
+  local item_name = item_name
+  local selected_item = {}
 
-  -- Will break after target found to not interfere with external
-  -- calls expecting a return
+  -- Will call break after target found. 
+  -- This is to not interfere with external calls expecting a return
   while 1 == 1
   do
     for i = 1, 16
     do
-      current = turtle.getItemDetail() or {"empty"}
+      selected_item = turtle.getItemDetail() or {"empty"}
       -- If current slot not identical to description increment slot
-      if current.name ~= description
+      if selected_item.name ~= item_name
       then
 
         -- If at slot 16 reset to one instead of advancing
@@ -99,7 +121,7 @@ function Turtle:seek(description)
         end
 
       -- If match found return true
-      elseif current.name == description
+      elseif selected_item.name == item_name
       then
         return true
       end
@@ -109,7 +131,7 @@ function Turtle:seek(description)
     -- Request user input
     Turtle.trywipe()
     turtle.select(1)
-    print("No slots found matching description passed (" .. description .. ") Refresh? y/n")
+    print("No slots found matching description passed (" .. item_name .. ") Refresh? y/n")
     if string.lower(io.read()) ~= "y"
     then
       -- Update note and exit
@@ -121,9 +143,11 @@ function Turtle:seek(description)
   end
 end
 
-
+-- Movement Methods --
 -- w,a,s,d,q,e,r,f
 -- @param distance: repeat n times
+-- TODO: Refactor into one method
+  -- This will be complicated by the call system
 function Turtle:w(distance)
   -- Default to once
 
@@ -461,14 +485,15 @@ end
 
 -- Start --
 bTurtle = Turtle:new()
-rollover_note = "" -- Global
+rollover_note = "Use Help 'Method' for description\n" -- Global | Displays on startup
 local input = ""
 local input_formated = {}
 local input_index = 1
 local params = {}
 local param_index = 1
 
-
+-- once everything is instantiated we can begin interacting
+-- with the turtle.
 while true
 do
   Turtle:trywipe()
@@ -480,7 +505,7 @@ do
 
   term.setTextColor(1) -- Dec White
   print("Current fuel Level:", turtle.getFuelLevel())
-  print("Use Help 'Method' for description\n")
+  print()
   print("Methods:")
 
   print("  w,a,s,d,q,e,r,f")
@@ -545,9 +570,10 @@ do
   end
 
 
-  -- If user enters any form of input break immediatly
+  -- If user enters any form of exit break immediatly
   if input_lower == "exit" or input_lower == "ex"
   then
+    -- Clear screen before exiting
     Turtle:trywipe()
     break
 
